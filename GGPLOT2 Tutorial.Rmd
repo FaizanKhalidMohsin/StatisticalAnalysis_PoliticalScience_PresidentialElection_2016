@@ -1,0 +1,98 @@
+---
+title: "GGPLOT2 Tutorial"
+author: "Faizan Khalid Mohsin"
+date: "February 27, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r cars}
+data1 = read.csv("anes2016.csv")
+
+data1
+print(data1)
+
+```
+
+## Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+# Setup
+options(scipen=999)  # turn off scientific notation like 1e+06
+library(ggplot2)
+data("midwest", package = "ggplot2")  # load the data
+# midwest <- read.csv("http://goo.gl/G1K41K") # alt source 
+
+# Init Ggplot
+ggplot(midwest, aes(x=area, y=poptotal))  # area and poptotal are columns in 'midwest'
+```
+
+
+Making scatter plots:
+```{r}
+ggplot(midwest, aes(x=area, y=poptotal)) + geom_point()
+```
+
+
+```{r}
+ ggplot(midwest, aes(x=area, y=poptotal)) + geom_point() + geom_smooth(method="lm")
+
+g =  ggplot(midwest, aes(x=area, y=poptotal)) + geom_point() + geom_smooth(method="lm")
+plot(g)
+```
+
+
+```{r}
+g + labs(title="Area Vs Population", subtitle="From midwest dataset", y="Population", x="Area", caption="Midwest Demographics")
+```
+
+Complete ggplot command
+```{r}
+
+ggplot(midwest, aes(x=area, y=poptotal)) + 
+  geom_point() + 
+  geom_smooth(method="lm") + 
+  coord_cartesian(xlim=c(0,0.1), ylim=c(0, 1000000)) + 
+  labs(title="Area Vs Population", subtitle="From midwest dataset", y="Population", x="Area", caption="Midwest Demographics")
+
+```
+
+
+How to color code as a function of States. 
+
+```{r}
+gg <- ggplot(midwest, aes(x=area, y=poptotal)) + 
+  geom_point(aes(col=state)) +  # Set color to vary based on state categories.
+  geom_smooth(method="lm") + 
+  #coord_cartesian(xlim=c(0,0.1), ylim=c(0, 1000000)) +
+  labs(title="Area Vs Population", subtitle="From midwest dataset", y="Population", x="Area", caption="Midwest Demographics")
+plot(gg)
+```
+
+Creating dataset:
+
+```{r}
+df <- data.frame( dose= c("D0.5", "D1", "D2") ,
+                len=c(4.2, 10, 29.5))
+
+p = ggplot(data=df, aes(x=dose, y=len)) +
+  geom_bar(stat="identity")
+
+p
+# Horizontal bar plot
+p + coord_flip()
+
+# Inside bars
+ggplot(data=df, aes(x=dose, y=len)) +
+  geom_bar(stat="identity", fill="steelblue")+
+  geom_text(aes(label=len), vjust=1.6, color="white", size=3.5)
+```
+

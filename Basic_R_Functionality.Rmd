@@ -1,0 +1,41 @@
+---
+title: "Basic R functionality"
+author: "Faizan Khalid Mohsin"
+date: "February 27, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+
+```{r cars}
+
+
+dir()
+read.csv()
+read.table()
+
+seq()
+1:10
+a = c(1, 2, 4)
+cbind()
+rbind()
+
+#dplyr and subsetting
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

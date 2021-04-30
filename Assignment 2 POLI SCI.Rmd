@@ -1,0 +1,181 @@
+---
+title: "Assignment 2 POLI SCI"
+author: "Faizan Khalid Mohsin"
+date: "February 25, 2018"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+#### Q (a) Recodethevariablemeasuringthevotechoiceinthepresidentialelection(V162034a) bykeepingonlythecategoriesforthetwomajorcandidates—HillaryClintonandDonaldTrump—andbysettingtheothercategoriesasmissingvalues. PrinttheRcodeyou haveused.
+
+```{r }
+
+require(dplyr)
+
+data1 = read.csv("anes2016.csv")
+
+# str(data1)
+# names(data1)
+# dim(data1)
+# data1$V162034a[1]
+# head(data1)
+# class(data1)
+# donald = data1$V162034a[1]
+# ifelse(c("a", "b", "abd", "a", "a", "cdd") %in% c("a", "b"), c("a", "b", "abd", "a", "a", "cdd"), NA) 
+
+newcan_data1 = mutate(data1, new_candidates = 
+                        as.factor(ifelse(as.character(data1$V162034a) %in%  c("1. Hillary Clinton", "2. Donald Trump"), as.character(data1$V162034a), NA)))
+
+# str(newcan_data1)
+
+```
+
+#### Q (b) Using a contingency table, examine the association between the variable V162148, which measures whether respondents support government efforts to reduce income inequalities, and the vote choice variable created in 1(a). Treat the vote choice as the dependent variable. Report the conditional distributions and compute a significance test that is appropriate in this context. Report your results and the R code you have used. 
+
+```{r pressure }
+
+require(knitr)
+
+# Produce the contingency table. 
+
+contingency_table = table(newcan_data1$new_candidates, newcan_data1$V162148)
+
+kable(contingency_table, caption = "Table 1. Respondents support of government efforts to reduce income inequalities per candidate")
+
+# Find conditional probabilities: 
+
+#Conditional Distribution for Donald Trump
+contingency_table[1,]/sum(contingency_table)
+
+#Conditional Distribution for Hillary Clinton
+contingency_table[2,]/sum(contingency_table)
+
+# Do the Chi-square test
+
+chisq.test(contingency_table)
+summary(contingency_table) # also does the job. 
+
+```
+
+#### Q 1 (c) In a few sentences, interpret the findings obtained in 1(b). Briefly explain the nature ofthestatisticsyouhaveused,anddiscussyourresultsinsubstantiveterms.
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+#### Q 1 (d) The variable V161342 is the gender of the respondent. Compute a 95% confidence interval around the difference between the proportion of women who voted for Donald Trump and the proportion of men who voted for him.
+
+```{r}
+
+```
+
+#### Q 1 (e) In one or two sentences, interpret the result obtained in 1(d).
+
+
+### 2. These second problem requires downloading a section of the Quality of Government Dataset (qog_exercise.csv) available on Blackboard. The codebook describing variables is also included. (6points) 
+
+
+#### Q 2 (a) Create a binary variable that equals 1 if a country is a democracy, and 0 otherwise, using the regime variable named *ht_regtype1*. Reportyourcode.
+
+```{r}
+raw_data2 = read.csv("qog_exercise.csv")
+str(raw_data2)
+
+data2 = raw_data2 %>% mutate(Democratic = ifelse(ht_regtype1 == 100, 1, 0)) # what about NA values. Here we assume if and only if ht_regtype1 is 100, it is a Democratic Country.
+            
+str(data2)                 
+#data2$ht_regtype1
+
+```
+
+
+#### Q 2 (b) Using the binary variable created in 2(a), use a significance test to assess whether the mean of the global terrorism index (named voh_gti) is lower in democracies compared to non-democratic regimes. The global terrorism index ranges from 0 to 10, where higher values indicate that a country is more heavily impacted by terrorism. 
+
+```{r}
+
+# Could use ANOVA or Two Sample t-test
+# Method 1: use t-test first:
+
+# Helper function to create the two samples vectors on which we will perform the two sample t-test. 
+
+create_sample_vectors = function(data, var_of_interest, var_to_filter, value1, value2){
+  
+  #data: a data frame
+  #var_of_interest: a character string with the name of the variable of which we   #                 will compare the means in the t.test
+  #var_to_filter: a character string with the name of the variable by which to 
+  #               group by
+  #value1: the number 1 number which indicates all the democratic countries
+  #value2: the number 0 which indicates all the nondemocratic coutries. 
+  
+  dem_terror = subset(data, var_to_filter == value1)[, var_of_interest]
+  nondem_terror = subset(data, var_to_filter == value2)[, var_of_interest] 
+  
+return(c(dem_terror, nondem_terror))
+  
+}
+
+#demterror = create_sample_vectors(data2, voh_gti, Democratic, 1, 0)[1]
+#nondemterror = create_sample_vectors(data2, voh_gti, Democratic, 1, 0)[2]
+
+
+dem_terror = subset(data2, Democratic == 1)[, "voh_gti"]
+nondem_terror = subset(data2, Democratic == 0)[,"voh_gti"]
+
+t.test(dem_terror, nondem_terror)
+
+# #### Using dplyr package to do the same thing as above. 
+# dem_terror_index = data2 %>% filter(Democratic==1) %>% select(voh_gti) 
+# nondem_terror_index = data2 %>% filter(Democratic==0) %>% select(voh_gti) 
+# t.test(dem_terror_index, nondem_terror_index)
+
+
+# # Method 2: Use Anova
+# 
+# # First test the assumptions of ANOVA
+# 
+# bartlett.test(voh_gti ~ Democratic, data = data2) # Homogeneity of Variances
+# # Not homegenous.
+# 
+# qqnorm(dem_terror, ylab = "Sample Quantiles for Democratic Country Terror Index") ; qqline(nondem_terror, col = 2) # Multivariate normality test
+# # Not normally distributed
+# 
+# #Should not use anova test. Should use nonparametric equivalent which the T-test below does automatically. 
+# result_terror = aov(voh_gti ~ Democratic, data = data2)
+# summary(result_terror)
+
+
+
+```
+
+Next, perform a similar test for the mean level of military expenditures as a percentage of the gross domestic product (the variable named wdi_expmilgdp). Make sure to report all your steps and the R code you have used. 
+
+```{r}
+
+### This wdi_expmilgdp is the military expenditure as a percentage of the gdp. ### Hence should not be between the values of 0 and 1. Or is this between 0 and ### 100. So if a country has the value of 3.4 it means their military expenditure ### as a percentatge of the gdp is 3.4%
+
+dem_military_exp = data2 %>% filter(Democratic==1) %>% select(wdi_expmilgdp)
+nondem_military_exp = data2 %>% filter(Democratic==0) %>% select(wdi_expmilgdp)
+
+t.test(dem_military_exp, nondem_military_exp)
+
+dem_terror = subset(data2, Democratic == 1)[, "wdi_expmilgdp"]
+nondem_terror = subset(data2, Democratic == 0)[,"wdi_expmilgdp"]
+
+t.test(dem_terror, nondem_terror)
+
+```
+
+
+#### Q 2 (c) In a few sentences,interpret the outcome of both tests conducted in 2(b).
+
+
+From the tests above we see that non-democratic countries have higher terrorism and also spend more on their military expenditure as a percentage of their gdp compared to democratic countries that have statistically significant less terrorism and also statistically significantly spend less on military expenditure as a percentage of their gdp. 
+
+
